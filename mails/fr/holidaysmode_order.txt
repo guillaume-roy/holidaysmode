@@ -1,0 +1,10 @@
+
+[{shop_url}] 
+
+Bonjour {firstname} {lastname},
+
+{HOLIDAYSMODE_EMAIL_BODY}
+
+{shop_name} [{shop_url}] propulsé par
+PrestaShop(tm) [http://www.prestashop.com/] 
+
