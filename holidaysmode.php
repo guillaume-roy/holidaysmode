@@ -37,7 +37,7 @@ class HolidaysMode extends Module
 	{
 		$this->name = 'holidaysmode';
 		$this->tab = 'front_office_features';
-		$this->version = '1.1.0';
+		$this->version = '1.2.0';
 		$this->author = 'Guillaume ROY';
 		$this->need_instance = 0;
 
@@ -58,6 +58,7 @@ class HolidaysMode extends Module
 		return 
 		parent::install() &&
 		$this->registerHook('displayPaymentTop') &&
+		$this->registerHook('displayTop') &&
 		$this->registerHook('actionValidateOrder') &&
 		$this->registerHook('displayHeader') && 
 		$this->initVariables();
@@ -70,6 +71,7 @@ class HolidaysMode extends Module
 		$this->unregisterHook('displayPaymentTop') &&
 		$this->unregisterHook('actionValidateOrder') &&
 		$this->unregisterHook('displayHeader') && 
+		$this->registerHook('displayTop') &&
 		$this->cleanVariables();
 	}
 
@@ -91,6 +93,7 @@ class HolidaysMode extends Module
 		Configuration::updateValue('HOLIDAYSMODE_ACTIVATE', 0);
 		Configuration::updateValue('HOLIDAYSMODE_EMAIL', 0);
 		Configuration::updateValue('HOLIDAYSMODE_ACTIVATE_MESSAGE', 0);
+		Configuration::updateValue('HOLIDAYSMODE_HOOK', 'displayPaymentTop');
 
 		return true;
 	}
@@ -103,6 +106,7 @@ class HolidaysMode extends Module
 		Configuration::deleteByName('HOLIDAYSMODE_EMAIL_OBJECT');
 		Configuration::deleteByName('HOLIDAYSMODE_EMAIL_BODY');
 		Configuration::deleteByName('HOLIDAYSMODE_EMAIL');
+		Configuration::deleteByName('HOLIDAYSMODE_HOOK');
 
 		return true;
 	}
@@ -115,9 +119,22 @@ class HolidaysMode extends Module
 		}
 	}
 
+	public function hookDisplayTop($params)
+	{
+		return $this->displayMessage($params, 'displayTop');
+	}
+
 	public function hookDisplayPaymentTop($params)
 	{
+		return $this->displayMessage($params, 'displayPaymentTop');
+	}
+
+	protected function displayMessage($params, $selectedHook)
+	{
 		if(!$this->moduleIsActivated())
+			return '';
+
+		if(strcasecmp(Configuration::get('HOLIDAYSMODE_HOOK'), $selectedHook) != 0)
 			return '';
 
 		if (!$this->isCached('blockbanner.tpl', $this->getCacheId()))
@@ -206,6 +223,7 @@ class HolidaysMode extends Module
 			Configuration::updateValue('HOLIDAYSMODE_EMAIL_OBJECT', $values['HOLIDAYSMODE_EMAIL_OBJECT']);
 			Configuration::updateValue('HOLIDAYSMODE_ACTIVATE_MESSAGE', intval(Tools::getValue('HOLIDAYSMODE_ACTIVATE_MESSAGE')));
 			Configuration::updateValue('HOLIDAYSMODE_MESSAGE', $values['HOLIDAYSMODE_MESSAGE']);
+			Configuration::updateValue('HOLIDAYSMODE_HOOK', Tools::getValue('HOLIDAYSMODE_HOOK'));
 
 			$this->_clearCache('holidaysmode.tpl');
 			return $this->displayConfirmation($this->l('The settings have been updated.'));
@@ -255,6 +273,17 @@ class HolidaysMode extends Module
 			$generalIcon = _PS_ADMIN_IMG_ . 'information.png';
 			$inputClass = "t";
 		}
+
+		$hooksOptions = array(
+			array(
+				'id_option' => 'displayPaymentTop',
+				'name' => $this->l('Payment page (displayPaymentTop)')
+			),
+			array(
+				'id_option' => 'displayTop',
+				'name' => $this->l('Top of all pages (displayTop)')
+			)
+		);
 
 		$fields_form[0]['form'] = array(
 			'legend' => array(
@@ -335,6 +364,18 @@ class HolidaysMode extends Module
 					)
 				),
 				array(
+					'name' => 'HOLIDAYSMODE_HOOK',
+					'type' => 'select',
+					'label' => $this->l('Select Hook'),
+					'desc' => $this->l('Select the hook where the message will be displayed.'),
+					'required' => true, 
+					'options' => array(
+						'query' => $hooksOptions,
+						'id' => 'id_option',
+						'name' => 'name'
+					)
+				),
+				array(
 					'name' => 'HOLIDAYSMODE_MESSAGE',
 					'type' => 'text',
 					'label' => $this->l('Message'),
@@ -403,6 +444,7 @@ class HolidaysMode extends Module
 			'HOLIDAYSMODE_EMAIL_BODY' => $fields['HOLIDAYSMODE_EMAIL_BODY'],
 			'HOLIDAYSMODE_EMAIL_OBJECT' => $fields['HOLIDAYSMODE_EMAIL_OBJECT'],
 			'HOLIDAYSMODE_EMAIL' => intval(Tools::getValue('HOLIDAYSMODE_EMAIL', Configuration::get('HOLIDAYSMODE_EMAIL'))),
+			'HOLIDAYSMODE_HOOK' => Tools::getValue('HOLIDAYSMODE_HOOK', Configuration::get('HOLIDAYSMODE_HOOK')),
 			'PS_CATALOG_MODE' => intval(Tools::getValue('PS_CATALOG_MODE', Configuration::get('PS_CATALOG_MODE')))
 			);
 	}
