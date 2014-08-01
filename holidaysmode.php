@@ -37,17 +37,20 @@ class HolidaysMode extends Module
 	{
 		$this->name = 'holidaysmode';
 		$this->tab = 'front_office_features';
-		$this->version = 1.0;
+		$this->version = '1.1.0';
 		$this->author = 'Guillaume ROY';
 		$this->need_instance = 0;
 
-		$this->bootstrap = true;
+		if(version_compare(_PS_VERSION_, '1.6.0.0', '>='))
+		{
+			$this->bootstrap = true;
+		}
 
 		parent::__construct();	
 
 		$this->displayName = $this->l('Holidays Mode');
 		$this->description = $this->l('Set the current store in holidays mode.');
-		$this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+		$this->ps_versions_compliancy = array('min' => '1.5.0.2', 'max' => _PS_VERSION_);
 	}
 
 	public function install()
@@ -242,15 +245,27 @@ class HolidaysMode extends Module
 
 	protected function buildForm()
 	{
+		$switchType = "switch";
+		$generalIcon = "icon-cogs";
+		$inputClass = "";
+
+		if(version_compare(_PS_VERSION_, '1.6.0.0', '<'))
+		{
+			$switchType = "radio";
+			$generalIcon = _PS_ADMIN_IMG_ . 'information.png';
+			$inputClass = "t";
+		}
+
 		$fields_form[0]['form'] = array(
 			'legend' => array(
 				'title' => $this->l('General'),
-				'icon' => 'icon-cogs'
+				'icon' => $generalIcon
 				),
 			'input' => array(
 				array(
 					'name' => 'HOLIDAYSMODE_ACTIVATE',
-					'type' => 'switch',
+					'type' => $switchType,
+					'class' => $inputClass,
 					'label' => $this->l('Activate'),
 					'desc' => $this->l('Activate the holidays mode.'),
 					'is_bool' => true,
@@ -276,12 +291,13 @@ class HolidaysMode extends Module
 		$fields_form[1]['form'] = array(
 			'legend' => array(
 				'title' => $this->l('Options'),
-				'icon' => 'icon-cogs'
+				'icon' => $generalIcon
 				),
 			'input' => array(
 				array(
 					'name' => 'PS_CATALOG_MODE',
-					'type' => 'switch',
+					'type' => $switchType,
+					'class' => $inputClass,
 					'label' => $this->l('Catalog mode'),
 					'desc' => $this->l('Disable orders functionalities.'),
 					'is_bool' => true,
@@ -300,7 +316,8 @@ class HolidaysMode extends Module
 					),
 				array(
 					'name' => 'HOLIDAYSMODE_ACTIVATE_MESSAGE',
-					'type' => 'switch',
+					'type' => $switchType,
+					'class' => $inputClass,
 					'label' => $this->l('Display Message'),
 					'desc' => $this->l('Display the message in the payment selection page.'),
 					'is_bool' => true,
@@ -326,7 +343,8 @@ class HolidaysMode extends Module
 					),
 				array(
 					'name' => 'HOLIDAYSMODE_EMAIL',
-					'type' => 'switch',
+					'type' => $switchType,
+					'class' => $inputClass,
 					'label' => $this->l('Send Email'),
 					'desc' => $this->l('Notification email sent after the order validation.'),
 					'is_bool' => true,

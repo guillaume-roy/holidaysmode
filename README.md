@@ -10,7 +10,7 @@ Les fonctionnalités sont les suivantes (chaque option peut être désactivée i
 * Envoyer un email lors de la validation d'une commande
 * Prise en charge de la localisation
 
-Compatibilité : Prestashop v1.6
+Compatibilité : Prestashop v1.5.0.2-v1.6
 
 ---
 
@@ -23,6 +23,14 @@ The features are as follows: Les fonctionnalités sont les suivantes (each optio
 * Send an email when at the validation order
 * Support for localization 
 
-Compatibility: Prestashop v1.6
+Compatibility: Prestashop v1.5.0.2-v1.6
 
 **Guillaume ROY**
+
+---
+
+*Changelogs*
+
+* v1.0.0 : Create module
+* v1.1.0 : Add module compliant with Prestashop versions 1.5.0.2 to 1.6+
+** Thanks to @okom3pom (https://github.com/okom3pom)

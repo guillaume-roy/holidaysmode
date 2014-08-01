@@ -2,7 +2,7 @@
 <module>
 	<name>holidaysmode</name>
 	<displayName><![CDATA[Mode Vacances]]></displayName>
-	<version><![CDATA[1]]></version>
+	<version><![CDATA[1.1.0]]></version>
 	<description><![CDATA[Passe la boutique actuelle en mode vacances.]]></description>
 	<author><![CDATA[Guillaume ROY]]></author>
 	<tab><![CDATA[front_office_features]]></tab>
