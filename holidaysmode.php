@@ -3,7 +3,7 @@
 /*
 * The MIT License (MIT)
 *
-* Copyright (c) 2014 Guillaume ROY
+* Copyright (c) 2014-2016 Guillaume ROY
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ class HolidaysMode extends Module
 	{
 		$this->name = 'holidaysmode';
 		$this->tab = 'front_office_features';
-		$this->version = '1.2.0';
+		$this->version = '1.3.0';
 		$this->author = 'Guillaume ROY';
 		$this->need_instance = 0;
 
@@ -56,23 +56,23 @@ class HolidaysMode extends Module
 	public function install()
 	{
 		return 
-		parent::install() &&
-		$this->registerHook('displayPaymentTop') &&
-		$this->registerHook('displayTop') &&
-		$this->registerHook('actionValidateOrder') &&
-		$this->registerHook('displayHeader') && 
-		$this->initVariables();
+			parent::install() &&
+			$this->registerHook('displayPaymentTop') &&
+			$this->registerHook('displayTop') &&
+			$this->registerHook('actionValidateOrder') &&
+			$this->registerHook('displayHeader') && 
+			$this->initVariables();
 	}
 	
 	public function uninstall()
 	{
 		return 
-		parent::uninstall() &&
-		$this->unregisterHook('displayPaymentTop') &&
-		$this->unregisterHook('actionValidateOrder') &&
-		$this->unregisterHook('displayHeader') && 
-		$this->registerHook('displayTop') &&
-		$this->cleanVariables();
+			parent::uninstall() &&
+			$this->unregisterHook('displayPaymentTop') &&
+			$this->unregisterHook('actionValidateOrder') &&
+			$this->unregisterHook('displayHeader') && 
+			$this->registerHook('displayTop') &&
+			$this->cleanVariables();
 	}
 
 	protected function initVariables()
@@ -94,7 +94,8 @@ class HolidaysMode extends Module
 		Configuration::updateValue('HOLIDAYSMODE_EMAIL', 0);
 		Configuration::updateValue('HOLIDAYSMODE_ACTIVATE_MESSAGE', 0);
 		Configuration::updateValue('HOLIDAYSMODE_HOOK', 'displayPaymentTop');
-
+		Configuration::updateValue('HOLIDAYSMODE_RETURN_DATE', '');
+		
 		return true;
 	}
 
@@ -107,6 +108,7 @@ class HolidaysMode extends Module
 		Configuration::deleteByName('HOLIDAYSMODE_EMAIL_BODY');
 		Configuration::deleteByName('HOLIDAYSMODE_EMAIL');
 		Configuration::deleteByName('HOLIDAYSMODE_HOOK');
+		Configuration::deleteByName('HOLIDAYSMODE_RETURN_DATE');
 
 		return true;
 	}
@@ -135,19 +137,31 @@ class HolidaysMode extends Module
 			return '';
 
 		if(strcasecmp(Configuration::get('HOLIDAYSMODE_HOOK'), $selectedHook) != 0)
-			return '';
+			return ''; 
 
-		if (!$this->isCached('blockbanner.tpl', $this->getCacheId()))
+		if(!$this->isCached('holidaysmode.tpl', $this->getCacheId()))
 		{
 			$holidaysmode_activate_message = intval(Configuration::get('HOLIDAYSMODE_ACTIVATE_MESSAGE'));
 			$holidaysmode_message = strval(Configuration::get('HOLIDAYSMODE_MESSAGE', $this->context->language->id));
+			$holidaysmode_return_date = Configuration::get('HOLIDAYSMODE_RETURN_DATE');
+			$holidaysmode_return_days = false;
+			
+			if(isset($holidaysmode_return_date) && Validate::isDate($holidaysmode_return_date) && class_exists('DateTime') && method_exists('DateTime','diff') )
+			{
+				$holidaysmode_return_days =  $this->compare_date($holidaysmode_return_date);
 
-			if($holidaysmode_activate_message == 0 || empty($holidaysmode_message))
+				if($holidaysmode_return_days < 1)
+					return;
+			}
+					
+			if($holidaysmode_activate_message == 0 || (empty($holidaysmode_message) && empty($holidaysmode_return_date)))
 				return;
-
+				
 			$this->smarty->assign(array(
-				'holidaysmode_message' => $holidaysmode_message
-				));
+				'holidaysmode_message' => $holidaysmode_message,
+				'holidaysmode_return_days' => $holidaysmode_return_days,
+				'holidaysmode_return_date' => $holidaysmode_return_date
+			));
 		}
 
 		return $this->display(__FILE__, 'holidaysmode.tpl', $this->getCacheId());
@@ -209,12 +223,23 @@ class HolidaysMode extends Module
 		{
 			$languages = Language::getLanguages(false);
 			$values = array();
+			$output  = null ;
+			
 			foreach ($languages as $lang)
 			{
-				$values['HOLIDAYSMODE_MESSAGE'][$lang['id_lang']] = strval(Tools::getValue('HOLIDAYSMODE_MESSAGE_'.$lang['id_lang']));
+				if (!Validate::isCleanHtml(Tools::getValue('HOLIDAYSMODE_MESSAGE_'.$lang['id_lang']))) {
+					$output .= $this->displayError(sprintf( $this->l('Invalid terms for %s'), $lang['name']));
+				}
+				else {
+					$values['HOLIDAYSMODE_MESSAGE'][$lang['id_lang']] = strval(Tools::getValue('HOLIDAYSMODE_MESSAGE_'.$lang['id_lang']));
+				}
+					
 				$values['HOLIDAYSMODE_EMAIL_BODY'][$lang['id_lang']] = strval(Tools::getValue('HOLIDAYSMODE_EMAIL_BODY_'.$lang['id_lang']));
 				$values['HOLIDAYSMODE_EMAIL_OBJECT'][$lang['id_lang']] = strval(Tools::getValue('HOLIDAYSMODE_EMAIL_OBJECT_'.$lang['id_lang']));
 			}
+
+			if($output)
+				return $output;
 
 			Configuration::updateValue('PS_CATALOG_MODE', intval(Tools::getValue('PS_CATALOG_MODE')));
 			Configuration::updateValue('HOLIDAYSMODE_ACTIVATE', intval(Tools::getValue('HOLIDAYSMODE_ACTIVATE')));
@@ -222,8 +247,9 @@ class HolidaysMode extends Module
 			Configuration::updateValue('HOLIDAYSMODE_EMAIL_BODY', $values['HOLIDAYSMODE_EMAIL_BODY']);
 			Configuration::updateValue('HOLIDAYSMODE_EMAIL_OBJECT', $values['HOLIDAYSMODE_EMAIL_OBJECT']);
 			Configuration::updateValue('HOLIDAYSMODE_ACTIVATE_MESSAGE', intval(Tools::getValue('HOLIDAYSMODE_ACTIVATE_MESSAGE')));
-			Configuration::updateValue('HOLIDAYSMODE_MESSAGE', $values['HOLIDAYSMODE_MESSAGE']);
+			Configuration::updateValue('HOLIDAYSMODE_MESSAGE', $values['HOLIDAYSMODE_MESSAGE'],true);
 			Configuration::updateValue('HOLIDAYSMODE_HOOK', Tools::getValue('HOLIDAYSMODE_HOOK'));
+			Configuration::updateValue('HOLIDAYSMODE_RETURN_DATE', Tools::getValue('HOLIDAYSMODE_RETURN_DATE'));
 
 			$this->_clearCache('holidaysmode.tpl');
 			return $this->displayConfirmation($this->l('The settings have been updated.'));
@@ -256,7 +282,7 @@ class HolidaysMode extends Module
 			'fields_value' => $this->getConfigFieldsValues(),
 			'languages' => $this->context->controller->getLanguages(),
 			'id_language' => $this->context->language->id
-			);
+		);
 
 		return $helper->generateForm($this->buildForm());
 	}
@@ -377,11 +403,21 @@ class HolidaysMode extends Module
 				),
 				array(
 					'name' => 'HOLIDAYSMODE_MESSAGE',
-					'type' => 'text',
+					'type' => 'textarea',
 					'label' => $this->l('Message'),
 					'desc' => $this->l('The message to be displayed.'),
-					'lang' => true
-					),
+					'lang' => true,
+					'cols' => 60,
+					'rows' => 10,
+					'class' => 'rte',
+					'autoload_rte' => true,
+				),
+				array(
+					'name' => 'HOLIDAYSMODE_RETURN_DATE',
+					'type' => 'date',
+					'label' => $this->l('End holidays date'),
+					'desc' => $this->l('Only work with PHP >= 5.3.'),
+				),
 				array(
 					'name' => 'HOLIDAYSMODE_EMAIL',
 					'type' => $switchType,
@@ -424,6 +460,26 @@ class HolidaysMode extends Module
 
 		return $fields_form;
 	}
+	
+	public function compare_date( $date1 , $date2  =  false ) 
+	{
+		// /!\ Works only with PHP >= 5.3
+		if( class_exists('DateTime') && method_exists('DateTime','diff')  )
+		{
+		
+			if( isset( $date2 ) )
+				$date2 =  date('Y-m-d');
+	
+			$datetime1 = new DateTime($date2);
+			$datetime2 = new DateTime($date1);
+			$interval = $datetime1->diff($datetime2);
+		
+			return (int)$interval->format(' %R%a ');
+			
+		}
+		else 
+			return 'PHP >= 5.3';
+	}
 
 	protected function getConfigFieldsValues()
 	{
@@ -445,7 +501,8 @@ class HolidaysMode extends Module
 			'HOLIDAYSMODE_EMAIL_OBJECT' => $fields['HOLIDAYSMODE_EMAIL_OBJECT'],
 			'HOLIDAYSMODE_EMAIL' => intval(Tools::getValue('HOLIDAYSMODE_EMAIL', Configuration::get('HOLIDAYSMODE_EMAIL'))),
 			'HOLIDAYSMODE_HOOK' => Tools::getValue('HOLIDAYSMODE_HOOK', Configuration::get('HOLIDAYSMODE_HOOK')),
+			'HOLIDAYSMODE_RETURN_DATE' => Tools::getValue('HOLIDAYSMODE_RETURN_DATE', Configuration::get('HOLIDAYSMODE_RETURN_DATE')),
 			'PS_CATALOG_MODE' => intval(Tools::getValue('PS_CATALOG_MODE', Configuration::get('PS_CATALOG_MODE')))
-			);
+		);
 	}
 }

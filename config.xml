@@ -2,7 +2,7 @@
 <module>
 	<name>holidaysmode</name>
 	<displayName><![CDATA[Holidays Mode]]></displayName>
-	<version><![CDATA[1.2.0]]></version>
+	<version><![CDATA[1.3.0]]></version>
 	<description><![CDATA[Set the current store in holidays mode.]]></description>
 	<author><![CDATA[Guillaume ROY]]></author>
 	<tab><![CDATA[front_office_features]]></tab>
