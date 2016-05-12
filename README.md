@@ -16,6 +16,7 @@ Les fonctionnalités sont les suivantes (chaque option peut être désactivée i
 * Envoyer un email lors de la validation d'une commande
 * Pris en compte d'une date de retour (PHP >= 5.3)
 * Prise en charge de la localisation
+
 ---
 **ENGLISH**
 
@@ -28,6 +29,7 @@ The features are as follows: Les fonctionnalités sont les suivantes (each optio
 * Send an email when at the validation order
 * Support for a returning date (PHP >= 5.3)
 * Support for localization 
+
 ---
 
 *Changelogs*
