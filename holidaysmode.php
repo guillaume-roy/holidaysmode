@@ -37,7 +37,7 @@ class HolidaysMode extends Module
 	{
 		$this->name = 'holidaysmode';
 		$this->tab = 'front_office_features';
-		$this->version = '1.3.0';
+		$this->version = '1.3.1';
 		$this->author = 'Guillaume ROY';
 		$this->need_instance = 0;
 
@@ -145,15 +145,12 @@ class HolidaysMode extends Module
 			$holidaysmode_message = strval(Configuration::get('HOLIDAYSMODE_MESSAGE', $this->context->language->id));
 			$holidaysmode_return_date = Configuration::get('HOLIDAYSMODE_RETURN_DATE');
 			$holidaysmode_return_days = false;
-			
+
 			if(isset($holidaysmode_return_date) && Validate::isDate($holidaysmode_return_date) && class_exists('DateTime') && method_exists('DateTime','diff') )
 			{
-				$holidaysmode_return_days =  $this->compare_date($holidaysmode_return_date);
-
-				if($holidaysmode_return_days < 1)
-					return;
+				$holidaysmode_return_days = $this->compare_date($holidaysmode_return_date);
 			}
-					
+
 			if($holidaysmode_activate_message == 0 || (empty($holidaysmode_message) && empty($holidaysmode_return_date)))
 				return;
 				

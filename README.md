@@ -7,7 +7,7 @@ Prestashop v1.5.0.2 - v1.6+
 
 **FRENCH**
 
-*Ce module permet de passer la boutique courante en mode vacances.*
+*Ce module permet de passer la boutique en mode vacances.*
 
 Les fonctionnalités sont les suivantes (chaque option peut être désactivée indépendamment) :
 
@@ -20,9 +20,9 @@ Les fonctionnalités sont les suivantes (chaque option peut être désactivée i
 ---
 **ENGLISH**
 
-*This module allow to set the current store in holidays mode.*
+*This module allow to set the store in holidays mode.*
 
-The features are as follows: Les fonctionnalités sont les suivantes (each option can be disabled independently) :
+The features are as follows (each option can be disabled independently) :
 
 * Enable the catalog mode
 * Display a message in the payment selection page 
@@ -38,6 +38,7 @@ The features are as follows: Les fonctionnalités sont les suivantes (each optio
 * v1.1.0 : Add module compliant with Prestashop versions 1.5.0.2 to 1.6+
 * v1.2.0 : Add ability to choose the hook where the message will be displayed
 * v1.3.0 : Add ability to set a returning date
+* v1.3.1 : Display the returning date in the current date format
 
 *Contributors*
 
