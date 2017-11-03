@@ -32,6 +32,8 @@ The features are as follows (each option can be disabled independently) :
 
 ---
 
+![Module Screenshot](readme-screenshot.png)
+
 *Changelogs*
 
 * v1.0.0 : Create module
